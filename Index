@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>JaveMóvil – Rutas Accesibles</title>
+<style>
+  :root {
+    --jave-blue: #0a2472;
+    --jave-blue-mid: #1a3a8f;
+    --jave-blue-light: #1e4fcf;
+    --jave-yellow: #f5c800;
+    --jave-yellow-dark: #d4a800;
+    --white: #ffffff;
+    --gray-bg: #f4f5f8;
+    --gray-text: #6b7280;
+    --gray-border: #e2e4ea;
+    --green-acc: #2d7d46;
+    --green-light: #e8f5ec;
+    --orange-acc: #c95e1a;
+    --orange-light: #fdf0e8;
+    --red-acc: #c0392b;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Segoe UI', system-ui, sans-serif;
+    background: #1a1a2e;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 20px;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  /* ── DEVICE FRAME ── */
+  .device {
+    width: 375px;
+    background: #000;
+    border-radius: 44px;
+    padding: 10px;
+    box-shadow: 0 32px 80px rgba(0,0,0,0.6), inset 0 0 0 1px #333;
+    flex-shrink: 0;
+  }
+  .device-inner {
+    width: 100%;
+    background: var(--white);
+    border-radius: 36px;
+    overflow: hidden;
+    position: relative;
+    height: 760px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── STATUS BAR ── */
+  .status-bar {
+    background: var(--jave-blue);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 20px 6px;
+    flex-shrink: 0;
+  }
+  .status-bar span { color: #fff; font-size: 12px; font-weight: 600; }
+
+  /* ── HEADER ── */
+  .app-header {
+    background: var(--jave-blue);
+    padding: 10px 16px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .app-header .back-btn {
+    color: #fff;
+    font-size: 22px;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+    padding: 2px 4px;
+    opacity: 0.9;
+  }
+  .app-header h1 {
+    color: #fff;
+    font-size: 17px;
+    font-weight: 700;
+    flex: 1;
+    text-align: center;
+  }
+  .app-header .search-btn {
+    color: #fff;
+    font-size: 20px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    opacity: 0.9;
+    width: 28px;
+    text-align: center;
+  }
+
+  /* ── SCREENS ── */
+  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .screen.active { display: flex; }
+  .screen-body { flex: 1; overflow-y: auto; background: var(--gray-bg); }
+  .screen-body::-webkit-scrollbar { display: none; }
+
+  /* ══════════════════════════════════
+     SCREEN 1 – CATÁLOGO (HOME)
+  ══════════════════════════════════ */
+  .catalog-header {
+    background: var(--jave-blue);
+    padding: 0 0 16px;
+  }
+  .catalog-greeting {
+    padding: 6px 16px 14px;
+  }
+  .catalog-greeting .hello { color: rgba(255,255,255,0.7); font-size: 12px; }
+  .catalog-greeting .name { color: #fff; font-size: 16px; font-weight: 700; margin-top: 1px; }
+
+  .acc-banner {
+    margin: 0 12px;
+    background: var(--jave-yellow);
+    border-radius: 12px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    transition: opacity .15s;
+  }
+  .acc-banner:active { opacity: .85; }
+  .acc-banner .ab-icon {
+    width: 42px; height: 42px;
+    background: var(--jave-blue);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-size: 22px;
+  }
+  .acc-banner .ab-text .ab-label { font-size: 13px; font-weight: 700; color: var(--jave-blue); }
+  .acc-banner .ab-text .ab-sub { font-size: 11px; color: var(--jave-blue); opacity: .75; margin-top: 1px; }
+  .acc-banner .ab-arrow { margin-left: auto; color: var(--jave-blue); font-size: 18px; font-weight: 700; }
+
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--gray-border);
+    margin-top: 12px;
+  }
+  .catalog-item {
+    background: var(--white);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px 6px 12px;
+    cursor: pointer;
+    transition: background .15s;
+    gap: 8px;
+  }
+  .catalog-item:active { background: var(--gray-bg); }
+  .catalog-item.highlight { background: #e8f0ff; }
+  .catalog-item .ci-icon {
+    width: 44px; height: 44px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+  }
+  .catalog-item .ci-label {
+    font-size: 10px;
+    color: var(--jave-blue);
+    font-weight: 600;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .catalog-item.highlight .ci-label { color: var(--jave-blue-light); }
+
+  /* floating menu */
+  .fab { position: absolute; bottom: 14px; left: 14px; z-index: 50; cursor: pointer; }
+  .fab-circle {
+    width: 54px; height: 54px;
+    border-radius: 50%;
+    background: var(--jave-blue);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px;
+    box-shadow: 0 4px 16px rgba(10,36,114,0.4);
+    transition: transform .2s;
+  }
+  .fab:active .fab-circle { transform: scale(.93); }
+
+  /* ══════════════════════════════════
+     SCREEN 2 – CAMPUS BASE
+  ══════════════════════════════════ */
+  .campus-map-area {
+    position: relative;
+    height: 340px;
+    background: #e8f0e0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .campus-map-area svg { width: 100%; height: 100%; }
+
+  .map-controls {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .map-ctrl-cross {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 2px;
+  }
+  .mc-btn {
+    width: 36px; height: 36px;
+    background: var(--jave-blue);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 16px;
+    cursor: pointer;
+    border: none;
+  }
+  .mc-btn.empty { background: transparent; cursor: default; }
+
+  .acc-toggle-bar {
+    background: var(--white);
+    border-bottom: 1px solid var(--gray-border);
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .acc-toggle-bar .att-label { font-size: 13px; font-weight: 700; color: var(--jave-blue); flex: 1; }
+  .toggle-switch {
+    width: 44px; height: 24px;
+    background: var(--jave-blue);
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: background .2s;
+    flex-shrink: 0;
+  }
+  .toggle-switch::after {
+    content: '';
+    position: absolute;
+    right: 3px; top: 3px;
+    width: 18px; height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: right .2s;
+  }
+  .toggle-switch.off { background: #ccc; }
+  .toggle-switch.off::after { right: auto; left: 3px; }
+
+  .campus-legend {
+    background: var(--white);
+    padding: 8px 14px;
+    display: flex;
+    gap: 16px;
+    border-bottom: 1px solid var(--gray-border);
+    flex-shrink: 0;
+  }
+  .leg-item { display: flex; align-items: center; gap: 5px; }
+  .leg-dot { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+  .leg-item span { font-size: 10px; color: var(--gray-text); font-weight: 500; }
+
+  .campus-cta {
+    background: var(--white);
+    padding: 10px 14px 12px;
+    flex-shrink: 0;
+  }
+  .campus-cta button {
+    width: 100%;
+    background: var(--jave-blue);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+
+  /* ══════════════════════════════════
+     SCREEN 3 – CONFIGURAR RUTA
+  ══════════════════════════════════ */
+  .config-section {
+    background: var(--white);
+    margin-bottom: 8px;
+    padding: 14px 14px 12px;
+  }
+  .cs-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--jave-blue);
+    text-transform: uppercase;
+    letter-spacing: .6px;
+    margin-bottom: 10px;
+  }
+  .movilidad-btns {
+    display: flex;
+    gap: 6px;
+  }
+  .mv-btn {
+    flex: 1;
+    border: 1.5px solid var(--gray-border);
+    border-radius: 8px;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    background: var(--white);
+    transition: all .15s;
+  }
+  .mv-btn .mv-icon { font-size: 22px; }
+  .mv-btn .mv-label { font-size: 10px; font-weight: 600; color: var(--gray-text); text-align: center; }
+  .mv-btn.active { border-color: var(--jave-blue); background: #e8f0ff; }
+  .mv-btn.active .mv-label { color: var(--jave-blue); }
+
+  .condicion-list { display: flex; flex-direction: column; gap: 6px; }
+  .cond-card {
+    border: 1.5px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    background: var(--white);
+    transition: all .15s;
+  }
+  .cond-card.selected { border-color: var(--jave-blue); background: #e8f0ff; }
+  .cond-card .cc-icon { font-size: 22px; flex-shrink: 0; }
+  .cond-card .cc-name { font-size: 13px; font-weight: 600; color: var(--jave-blue); }
+  .cond-card .cc-sub { font-size: 11px; color: var(--gray-text); margin-top: 1px; }
+  .cond-card .cc-check { margin-left: auto; color: var(--jave-blue); font-size: 18px; }
+
+  .route-field {
+    border: 1.5px solid var(--gray-border);
+    border-radius: 10px;
+    padding: 11px 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--gray-bg);
+    margin-bottom: 6px;
+  }
+  .rf-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .rf-dot.origin { background: var(--jave-blue); }
+  .rf-dot.dest { background: var(--orange-acc); }
+  .route-field span { font-size: 13px; color: var(--gray-text); flex: 1; }
+  .route-field .rf-action { font-size: 14px; color: var(--jave-blue); }
+
+  .config-cta {
+    background: var(--white);
+    padding: 10px 14px 14px;
+    flex-shrink: 0;
+  }
+  .config-cta button {
+    width: 100%;
+    background: var(--jave-yellow);
+    color: var(--jave-blue);
+    border: none;
+    border-radius: 10px;
+    padding: 13px;
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: .2px;
+  }
+
+  /* ══════════════════════════════════
+     SCREEN 4 – NAVEGACIÓN
+  ══════════════════════════════════ */
+  .nav-map-area {
+    position: relative;
+    height: 280px;
+    background: #e8f0e0;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .nav-map-area svg { width: 100%; height: 100%; }
+
+  .nav-overlay {
+    position: absolute;
+    top: 10px; left: 10px; right: 52px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 10px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .nav-overlay .no-icon { font-size: 18px; color: var(--jave-blue); }
+  .nav-overlay .no-text { font-size: 12px; font-weight: 600; color: var(--jave-blue); }
+  .nav-overlay .no-sub { font-size: 10px; color: var(--gray-text); }
+
+  .route-metrics {
+    background: var(--jave-blue);
+    padding: 10px 14px;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .rm-item { text-align: center; }
+  .rm-val { font-size: 18px; font-weight: 700; color: #fff; }
+  .rm-label { font-size: 9px; color: rgba(255,255,255,0.65); margin-top: 1px; text-transform: uppercase; letter-spacing: .4px; }
+  .rm-badge { display: inline-block; background: var(--jave-yellow); color: var(--jave-blue); font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 10px; margin-top: 2px; }
+
+  .steps-section {
+    background: var(--white);
+    padding: 12px 14px;
+    flex-shrink: 0;
+  }
+  .steps-title { font-size: 12px; font-weight: 700; color: var(--jave-blue); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 10px; }
+  .step-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--gray-border);
+  }
+  .step-row:last-child { border-bottom: none; }
+  .step-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--jave-blue);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-info { flex: 1; }
+  .step-info .si-text { font-size: 12px; color: #1a1a2e; line-height: 1.4; font-weight: 500; }
+  .step-info .si-dist { font-size: 10px; color: var(--gray-text); margin-top: 2px; }
+  .step-tag {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .st-walk { background: var(--gray-bg); color: var(--gray-text); }
+  .st-elev { background: #dbeafe; color: #1e40af; }
+  .st-ramp { background: var(--green-light); color: var(--green-acc); }
+
+  /* ══════════════════════════════════
+     FLOW NAVIGATION (outside device)
+  ══════════════════════════════════ */
+  .flow-panel {
+    width: 240px;
+    padding: 24px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    align-self: flex-start;
+    margin-top: 40px;
+  }
+  .flow-title {
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: .5;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .flow-btn {
+    background: rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .flow-btn:hover { background: rgba(255,255,255,0.12); }
+  .flow-btn.active { background: var(--jave-yellow); border-color: var(--jave-yellow); }
+  .flow-btn .fb-num {
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.15);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .flow-btn.active .fb-num { background: var(--jave-blue); }
+  .flow-btn .fb-text .fb-label { font-size: 13px; font-weight: 600; color: #fff; }
+  .flow-btn.active .fb-text .fb-label { color: var(--jave-blue); }
+  .flow-btn .fb-text .fb-sub { font-size: 10px; color: rgba(255,255,255,0.5); margin-top: 1px; }
+  .flow-btn.active .fb-text .fb-sub { color: rgba(10,36,114,0.6); }
+  .flow-arrow {
+    color: rgba(255,255,255,0.2);
+    text-align: center;
+    font-size: 18px;
+  }
+  .flow-note {
+    margin-top: 8px;
+    background: rgba(245,200,0,0.1);
+    border: 1px solid rgba(245,200,0,0.25);
+    border-radius: 10px;
+    padding: 12px 14px;
+  }
+  .flow-note p { font-size: 11px; color: rgba(255,255,255,0.6); line-height: 1.6; }
+  .flow-note strong { color: var(--jave-yellow); }
+</style>
+</head>
+<body>
+
+<!-- ══ DEVICE ══ -->
+<div class="device">
+  <div class="device-inner">
+
+    <!-- STATUS BAR -->
+    <div class="status-bar">
+      <span>21:22</span>
+      <span>PUJ</span>
+      <span>◼◼◼ 74%</span>
+    </div>
+
+    <!-- ══ SCREEN 1: CATÁLOGO ══ -->
+    <div class="screen active" id="s1">
+      <div class="app-header" style="justify-content:center;">
+        <h1 style="text-align:left;font-size:20px;">JaveMóvil</h1>
+      </div>
+      <div class="screen-body">
+        <div class="catalog-header">
+          <div class="catalog-greeting" style="padding-top:14px;">
+            <div class="hello">Bienvenida,</div>
+            <div class="name">Mariana Cárdenas Prada</div>
+          </div>
+          <div class="acc-banner" onclick="goTo('s3')">
+            <div class="ab-icon">♿</div>
+            <div class="ab-text">
+              <div class="ab-label">Ruta accesible</div>
+              <div class="ab-sub">Nuevo · Navega sin escaleras</div>
+            </div>
+            <div class="ab-arrow">›</div>
+          </div>
+        </div>
+        <div class="catalog-grid">
+          <div class="catalog-item"><div class="ci-icon">📊</div><div class="ci-label">Mis Notas</div></div>
+          <div class="catalog-item"><div class="ci-icon">📻</div><div class="ci-label">Javeriana Estéreo</div></div>
+          <div class="catalog-item"><div class="ci-icon">📰</div><div class="ci-label">Noticias y Eventos</div></div>
+          <div class="catalog-item"><div class="ci-icon">🚗</div><div class="ci-label">Parqueadero</div></div>
+          <div class="catalog-item"><div class="ci-icon">🌐</div><div class="ci-label">Portal Institucional</div></div>
+          <div class="catalog-item"><div class="ci-icon">🔗</div><div class="ci-label">Intranet</div></div>
+          <div class="catalog-item"><div class="ci-icon">🎭</div><div class="ci-label">Agenda Cultural</div></div>
+          <div class="catalog-item"><div class="ci-icon">📋</div><div class="ci-label">Directorio</div></div>
+          <div class="catalog-item"><div class="ci-icon">🎟️</div><div class="ci-label">Eventos y Servicios</div></div>
+          <div class="catalog-item"><div class="ci-icon">🍽️</div><div class="ci-label">Servicios Alimentación</div></div>
+          <div class="catalog-item"><div class="ci-icon">🩺</div><div class="ci-label">CAPS</div></div>
+          <div class="catalog-item"><div class="ci-icon">🖨️</div><div class="ci-label">Impresión Int.</div></div>
+          <div class="catalog-item"><div class="ci-icon">✝️</div><div class="ci-label">Propósito Superior</div></div>
+          <div class="catalog-item"><div class="ci-icon">🔔</div><div class="ci-label">Notificaciones</div></div>
+          <div class="catalog-item highlight" onclick="goTo('s2')"><div class="ci-icon">🗺️</div><div class="ci-label" style="color:var(--jave-blue-light);font-weight:700;">Campus</div></div>
+          <div class="catalog-item"><div class="ci-icon">🚨</div><div class="ci-label">Emergencia</div></div>
+          <div class="catalog-item"><div class="ci-icon">⚙️</div><div class="ci-label">Configuración</div></div>
+          <div class="catalog-item"><div class="ci-icon">💳</div><div class="ci-label">Pago Facturas</div></div>
+          <div class="catalog-item highlight" onclick="goTo('s3')"><div class="ci-icon">♿</div><div class="ci-label" style="color:var(--jave-blue-light);font-weight:700;">Rutas Accesibles</div></div>
+          <div class="catalog-item"></div>
+        </div>
+      </div>
+      <div class="fab" onclick="alert('Menú JaveMóvil')">
+        <div class="fab-circle">🔄</div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN 2: CAMPUS + CAPA ACCESIBLE ══ -->
+    <div class="screen" id="s2">
+      <div class="app-header">
+        <button class="back-btn" onclick="goTo('s1')">←</button>
+        <h1>Campus</h1>
+        <button class="search-btn">🔍</button>
+      </div>
+      <div class="acc-toggle-bar">
+        <span class="att-label">♿ Modo accesible</span>
+        <div class="toggle-switch" id="campus-toggle" onclick="toggleCampusMode()"></div>
+        <span style="font-size:12px;font-weight:600;color:var(--jave-blue);margin-left:4px;" id="toggle-label">Activo</span>
+      </div>
+      <div class="campus-map-area">
+        <svg viewBox="0 0 375 340" xmlns="http://www.w3.org/2000/svg">
+          <!-- base grass -->
+          <rect width="375" height="340" fill="#d4e8c2"/>
+          <!-- paths -->
+          <rect x="60" y="0" width="18" height="340" fill="#c8d8b0" opacity=".6"/>
+          <rect x="0" y="140" width="375" height="16" fill="#c8d8b0" opacity=".6"/>
+          <!-- buildings simplified -->
+          <rect x="80" y="20" width="70" height="55" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="115" y="44" text-anchor="middle" font-size="8" fill="#2d5a1e" font-weight="600">Ed. Ó. Calvo</text>
+          <text x="115" y="55" text-anchor="middle" font-size="7" fill="#2d5a1e">Biblioteca</text>
+          <rect x="165" y="25" width="60" height="50" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="195" y="48" text-anchor="middle" font-size="8" fill="#2d5a1e" font-weight="600">Ed. Jesús</text>
+          <text x="195" y="59" text-anchor="middle" font-size="7" fill="#2d5a1e">Mª Yepes</text>
+          <rect x="240" y="40" width="80" height="60" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="280" y="66" text-anchor="middle" font-size="8" fill="#2d5a1e" font-weight="600">Ed. José</text>
+          <text x="280" y="77" text-anchor="middle" font-size="7" fill="#2d5a1e">Gabriel</text>
+          <rect x="80" y="165" width="90" height="55" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="125" y="189" text-anchor="middle" font-size="8" fill="#2d5a1e" font-weight="600">Ed. Pablo VI</text>
+          <rect x="190" y="170" width="70" height="50" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="225" y="192" text-anchor="middle" font-size="8" fill="#2d5a1e" font-weight="600">Ed. Pedro</text>
+          <text x="225" y="202" text-anchor="middle" font-size="7" fill="#2d5a1e">Arrupe</text>
+          <rect x="80" y="255" width="150" height="60" rx="3" fill="#c8a850" stroke="#a07820" stroke-width="1"/>
+          <text x="155" y="281" text-anchor="middle" font-size="8" fill="#5a3800" font-weight="600">Ed. Ingeniería (GAIA)</text>
+          <!-- standard blue pins -->
+          <g id="std-pins">
+            <circle cx="115" cy="20" r="6" fill="#0a2472"/><text x="115" y="24" text-anchor="middle" font-size="7" fill="white" font-weight="700">1</text>
+            <circle cx="195" cy="25" r="6" fill="#0a2472"/><text x="195" y="29" text-anchor="middle" font-size="7" fill="white" font-weight="700">2</text>
+            <circle cx="280" cy="40" r="6" fill="#0a2472"/><text x="280" y="44" text-anchor="middle" font-size="7" fill="white" font-weight="700">3</text>
+            <circle cx="125" cy="165" r="6" fill="#0a2472"/><text x="125" y="169" text-anchor="middle" font-size="7" fill="white" font-weight="700">4</text>
+            <circle cx="225" cy="170" r="6" fill="#0a2472"/><text x="225" y="174" text-anchor="middle" font-size="7" fill="white" font-weight="700">5</text>
+            <circle cx="155" cy="255" r="6" fill="#0a2472"/><text x="155" y="259" text-anchor="middle" font-size="7" fill="white" font-weight="700">6</text>
+          </g>
+          <!-- accessible route overlay (hidden by default) -->
+          <g id="acc-overlay" style="display:none">
+            <!-- route line -->
+            <polyline points="155,285 155,255 155,230 190,220 190,195 190,170 200,155 200,140 200,100 195,75" fill="none" stroke="#0a2472" stroke-width="3.5" stroke-dasharray="8,4" stroke-linecap="round" opacity=".9"/>
+            <!-- elevators -->
+            <circle cx="190" cy="165" r="9" fill="#0a2472"/>
+            <text x="190" y="170" text-anchor="middle" font-size="9" fill="white" font-weight="700">A</text>
+            <circle cx="200" cy="140" r="9" fill="#0a2472"/>
+            <text x="200" y="145" text-anchor="middle" font-size="9" fill="white" font-weight="700">A</text>
+            <!-- ramps -->
+            <circle cx="200" cy="100" r="8" fill="#2d7d46"/>
+            <text x="200" y="105" text-anchor="middle" font-size="9" fill="white" font-weight="700">R</text>
+            <!-- user position -->
+            <circle cx="155" cy="290" r="10" fill="#0a2472" stroke="white" stroke-width="2.5"/>
+            <text x="155" y="295" text-anchor="middle" font-size="11" fill="white">★</text>
+            <!-- destination -->
+            <circle cx="195" cy="50" r="12" fill="none" stroke="#c95e1a" stroke-width="2.5" stroke-dasharray="4,3"/>
+            <circle cx="195" cy="50" r="5" fill="#c95e1a"/>
+          </g>
+        </svg>
+        <div class="map-controls">
+          <div class="map-ctrl-cross">
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn">▲</button>
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn">◀</button>
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn">▶</button>
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn">▼</button>
+            <div class="mc-btn empty"></div>
+          </div>
+        </div>
+      </div>
+      <div class="campus-legend" id="campus-legend" style="display:none">
+        <div class="leg-item"><div class="leg-dot" style="background:#0a2472"></div><span>Ascensor accesible</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2d7d46"></div><span>Rampa</span></div>
+        <div class="leg-item"><div class="leg-dot" style="background:#c95e1a"></div><span>Destino</span></div>
+      </div>
+      <div class="campus-cta" style="margin-top:auto;">
+        <button onclick="goTo('s3')">♿ &nbsp;Planificar ruta accesible</button>
+      </div>
+      <div class="fab" onclick="goTo('s1')">
+        <div class="fab-circle">🔄</div>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN 3: CONFIGURAR RUTA ══ -->
+    <div class="screen" id="s3">
+      <div class="app-header">
+        <button class="back-btn" onclick="goTo('s2')">←</button>
+        <h1>Ruta accesible</h1>
+        <div style="width:28px"></div>
+      </div>
+      <div class="screen-body">
+        <div class="config-section">
+          <div class="cs-title">Tipo de movilidad</div>
+          <div class="movilidad-btns">
+            <div class="mv-btn active" onclick="selMov(this)">
+              <div class="mv-icon">🦯</div>
+              <div class="mv-label">Muletas</div>
+            </div>
+            <div class="mv-btn" onclick="selMov(this)">
+              <div class="mv-icon">🦾</div>
+              <div class="mv-label">Bota ortopédica</div>
+            </div>
+            <div class="mv-btn" onclick="selMov(this)">
+              <div class="mv-icon">♿</div>
+              <div class="mv-label">Silla de ruedas</div>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="cs-title">Mi condición</div>
+          <div class="condicion-list">
+            <div class="cond-card selected" onclick="selCond(this)">
+              <div class="cc-icon">🦵</div>
+              <div>
+                <div class="cc-name">Lesión miembro inferior</div>
+                <div class="cc-sub">Esguince, fractura, dolor articular</div>
+              </div>
+              <div class="cc-check">✓</div>
+            </div>
+            <div class="cond-card" onclick="selCond(this)">
+              <div class="cc-icon">♿</div>
+              <div>
+                <div class="cc-name">Movilidad reducida permanente</div>
+                <div class="cc-sub">Requiero rutas accesibles siempre</div>
+              </div>
+            </div>
+            <div class="cond-card" onclick="selCond(this)">
+              <div class="cc-icon">🏋️</div>
+              <div>
+                <div class="cc-name">Carga pesada o equipaje</div>
+                <div class="cc-sub">Prefiero rampas y ascensores</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="config-section">
+          <div class="cs-title">Origen y Destino</div>
+          <div class="route-field">
+            <div class="rf-dot origin"></div>
+            <span>Mi ubicación actual (GPS)</span>
+            <div class="rf-action">⊕</div>
+          </div>
+          <div class="route-field" style="margin-bottom:0">
+            <div class="rf-dot dest"></div>
+            <span>Ed. Jesús Mª Yepes, Piso 3</span>
+            <div class="rf-action">✎</div>
+          </div>
+        </div>
+      </div>
+      <div class="config-cta">
+        <button onclick="goTo('s4')">🗺️ &nbsp;Ver ruta accesible</button>
+      </div>
+    </div>
+
+    <!-- ══ SCREEN 4: NAVEGACIÓN ══ -->
+    <div class="screen" id="s4">
+      <div class="app-header">
+        <button class="back-btn" onclick="goTo('s3')">←</button>
+        <h1>Navegando · Muletas</h1>
+        <div style="width:28px"></div>
+      </div>
+      <div class="nav-map-area">
+        <svg viewBox="0 0 375 280" xmlns="http://www.w3.org/2000/svg">
+          <rect width="375" height="280" fill="#d4e8c2"/>
+          <rect x="55" y="0" width="16" height="280" fill="#c8d8b0" opacity=".5"/>
+          <rect x="0" y="120" width="375" height="14" fill="#c8d8b0" opacity=".5"/>
+          <rect x="75" y="15" width="65" height="48" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="107" y="36" text-anchor="middle" font-size="7" fill="#2d5a1e" font-weight="600">Biblioteca</text>
+          <text x="107" y="47" text-anchor="middle" font-size="7" fill="#2d5a1e">Alfonso</text>
+          <rect x="155" y="18" width="55" height="45" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="182" y="38" text-anchor="middle" font-size="7" fill="#2d5a1e" font-weight="600">Ed. Jesús</text>
+          <text x="182" y="48" text-anchor="middle" font-size="7" fill="#2d5a1e">Mª Yepes</text>
+          <rect x="225" y="30" width="70" height="55" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="260" y="54" text-anchor="middle" font-size="7" fill="#2d5a1e" font-weight="600">Ed. José</text>
+          <text x="260" y="64" text-anchor="middle" font-size="7" fill="#2d5a1e">Gabriel</text>
+          <rect x="75" y="145" width="85" height="50" rx="3" fill="#b8c8a0" stroke="#8aaa60" stroke-width="1"/>
+          <text x="117" y="167" text-anchor="middle" font-size="7" fill="#2d5a1e" font-weight="600">Ed. Pablo VI</text>
+          <rect x="75" y="220" width="140" height="48" rx="3" fill="#c8a850" stroke="#a07820" stroke-width="1"/>
+          <text x="145" y="241" text-anchor="middle" font-size="7" fill="#5a3800" font-weight="600">Ed. Ingeniería (GAIA)</text>
+          <!-- route -->
+          <polyline points="145,245 145,220 145,195 155,135 165,120 165,90 180,63" fill="none" stroke="#0a2472" stroke-width="3.5" stroke-dasharray="8,4" stroke-linecap="round"/>
+          <!-- elevators -->
+          <circle cx="155" cy="140" r="9" fill="#0a2472"/><text x="155" y="145" text-anchor="middle" font-size="9" fill="white" font-weight="700">A</text>
+          <circle cx="165" cy="90" r="9" fill="#0a2472"/><text x="165" y="95" text-anchor="middle" font-size="9" fill="white" font-weight="700">A</text>
+          <!-- ramp -->
+          <circle cx="165" cy="115" r="8" fill="#2d7d46"/><text x="165" y="120" text-anchor="middle" font-size="9" fill="white" font-weight="700">R</text>
+          <!-- user -->
+          <circle cx="145" cy="250" r="10" fill="#0a2472" stroke="white" stroke-width="2.5"/>
+          <text x="145" y="255" text-anchor="middle" font-size="11" fill="white">★</text>
+          <!-- dest -->
+          <circle cx="182" cy="40" r="11" fill="none" stroke="#c95e1a" stroke-width="2.5" stroke-dasharray="4,3"/>
+          <circle cx="182" cy="40" r="5" fill="#c95e1a"/>
+        </svg>
+        <div class="nav-overlay">
+          <div class="no-icon">↗</div>
+          <div>
+            <div class="no-text">Dirígete al corredor sur</div>
+            <div class="no-sub">Ed. Ingeniería · 40 m</div>
+          </div>
+        </div>
+        <div class="map-controls" style="top:auto;bottom:10px;transform:none;">
+          <div class="map-ctrl-cross">
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn" style="width:30px;height:30px;font-size:13px;">▲</button>
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn" style="width:30px;height:30px;font-size:13px;">◀</button>
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn" style="width:30px;height:30px;font-size:13px;">▶</button>
+            <div class="mc-btn empty"></div>
+            <button class="mc-btn" style="width:30px;height:30px;font-size:13px;">▼</button>
+            <div class="mc-btn empty"></div>
+          </div>
+        </div>
+      </div>
+      <div class="route-metrics">
+        <div class="rm-item"><div class="rm-val">7 min</div><div class="rm-label">Tiempo</div></div>
+        <div class="rm-item"><div class="rm-val">380 m</div><div class="rm-label">Distancia</div></div>
+        <div class="rm-item"><div class="rm-val"><span class="rm-badge">0 escaleras</span></div><div class="rm-label">Ruta accesible</div></div>
+      </div>
+      <div class="steps-section" style="flex:1;overflow-y:auto;">
+        <div class="steps-title">Indicaciones paso a paso</div>
+        <div class="step-row">
+          <div class="step-num">1</div>
+          <div class="step-info">
+            <div class="si-text">Dirígete al corredor sur del Ed. Ingeniería</div>
+            <div class="si-dist">40 m</div>
+          </div>
+          <div class="step-tag st-walk">Caminar</div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">2</div>
+          <div class="step-info">
+            <div class="si-text">Tomar ascensor A hacia nivel de conexión</div>
+            <div class="si-dist">Ascensor disponible</div>
+          </div>
+          <div class="step-tag st-elev">Ascensor</div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">3</div>
+          <div class="step-info">
+            <div class="si-text">Usar rampa lateral hacia Biblioteca Alfonso Borrero</div>
+            <div class="si-dist">30 m</div>
+          </div>
+          <div class="step-tag st-ramp">Rampa</div>
+        </div>
+        <div class="step-row">
+          <div class="step-num">4</div>
+          <div class="step-info">
+            <div class="si-text">Tomar ascensor A, Ed. Jesús Mª Yepes hasta piso 3</div>
+            <div class="si-dist">Destino: Piso 3</div>
+          </div>
+          <div class="step-tag st-elev">Ascensor</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ FLOW PANEL ══ -->
+<div class="flow-panel">
+  <div class="flow-title">Flujo de pantallas</div>
+
+  <div class="flow-btn active" id="fb1" onclick="goTo('s1')">
+    <div class="fb-num">1</div>
+    <div class="fb-text">
+      <div class="fb-label">Catálogo JaveMóvil</div>
+      <div class="fb-sub">Módulo destacado + banner</div>
+    </div>
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-btn" id="fb2" onclick="goTo('s2')">
+    <div class="fb-num">2</div>
+    <div class="fb-text">
+      <div class="fb-label">Mapa Campus</div>
+      <div class="fb-sub">Toggle modo accesible</div>
+    </div>
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-btn" id="fb3" onclick="goTo('s3')">
+    <div class="fb-num">3</div>
+    <div class="fb-text">
+      <div class="fb-label">Configurar ruta</div>
+      <div class="fb-sub">Movilidad, condición, destino</div>
+    </div>
+  </div>
+  <div class="flow-arrow">↓</div>
+  <div class="flow-btn" id="fb4" onclick="goTo('s4')">
+    <div class="fb-num">4</div>
+    <div class="fb-text">
+      <div class="fb-label">Navegación activa</div>
+      <div class="fb-sub">Mapa + pasos + métricas</div>
+    </div>
+  </div>
+
+  <div class="flow-note">
+    <p><strong>Nota del diseño:</strong> El módulo vive dentro de la app existente JaveMóvil como extensión de Campus. No reemplaza la app, la amplía.</p>
+  </div>
+</div>
+
+<script>
+  const screens = ['s1','s2','s3','s4'];
+  const flowBtns = ['fb1','fb2','fb3','fb4'];
+
+  function goTo(id) {
+    screens.forEach(s => {
+      document.getElementById(s).classList.remove('active');
+    });
+    document.getElementById(id).classList.add('active');
+    const idx = screens.indexOf(id);
+    flowBtns.forEach((b,i) => {
+      document.getElementById(b).classList.toggle('active', i === idx);
+    });
+  }
+
+  let campusActive = true;
+  function toggleCampusMode() {
+    campusActive = !campusActive;
+    const tog = document.getElementById('campus-toggle');
+    const lbl = document.getElementById('toggle-label');
+    const overlay = document.getElementById('acc-overlay');
+    const legend = document.getElementById('campus-legend');
+    tog.classList.toggle('off', !campusActive);
+    lbl.textContent = campusActive ? 'Activo' : 'Inactivo';
+    overlay.style.display = campusActive ? '' : 'none';
+    legend.style.display = campusActive ? '' : 'none';
+  }
+  // start with overlay visible
+  document.getElementById('acc-overlay').style.display = '';
+  document.getElementById('campus-legend').style.display = '';
+
+  function selMov(el) {
+    document.querySelectorAll('.mv-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function selCond(el) {
+    document.querySelectorAll('.cond-card').forEach(c => {
+      c.classList.remove('selected');
+      const chk = c.querySelector('.cc-check');
+      if (chk) chk.remove();
+    });
+    el.classList.add('selected');
+    const chk = document.createElement('div');
+    chk.className = 'cc-check';
+    chk.textContent = '✓';
+    el.appendChild(chk);
+  }
+</script>
+</body>
+</html>
