@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>JaveMóvil — Rutas Accesibles</title>
+<link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet"/>
+<style>
+:root{
+  --blue:#1a3a8f; --blue-dk:#0d2460; --yellow:#f5c400;
+  --green:#16a34a; --green-lt:#dcfce7; --red:#dc2626;
+  --bg:#f2f4f8; --text:#1a1a2e; --muted:#6b7280;
+  --border:rgba(26,58,143,.12);
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Roboto',sans-serif;background:#b8c8e4;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.phone{width:min(390px,100%);background:#fff;border-radius:40px;box-shadow:0 30px 80px rgba(0,0,0,.35);overflow:hidden;border:2px solid rgba(255,255,255,.4);position:relative}
+.sbar{background:var(--blue-dk);color:#fff;height:28px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;font-size:11px;font-weight:500}
+.abar{background:var(--blue);color:#fff;display:flex;align-items:center;height:52px;padding:0 12px;gap:8px;position:sticky;top:0;z-index:20;flex-shrink:0}
+.abar-title{flex:1;text-align:center;font-size:19px;font-weight:700;letter-spacing:-.3px}
+.abar-btn{width:38px;height:38px;background:none;border:none;color:#fff;cursor:pointer;display:grid;place-items:center;font-size:20px;border-radius:50%;transition:background .15s}
+.abar-btn:hover{background:rgba(255,255,255,.15)}
+
+.sbody{overflow-y:auto;max-height:680px}
+.sbody::-webkit-scrollbar{width:3px}
+.sbody::-webkit-scrollbar-thumb{background:rgba(26,58,143,.2);border-radius:4px}
+
+.screen{display:none}
+.screen.active{display:block;animation:fu .18s ease-out}
+@keyframes fu{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+
+/* ─── FAB ─── */
+.fab{position:absolute;bottom:16px;left:16px;width:52px;height:52px;border-radius:50%;background:var(--blue-dk);border:2.5px solid #fff;box-shadow:0 6px 20px rgba(26,58,143,.4);cursor:pointer;display:grid;place-items:center;z-index:50;transition:transform .15s}
+.fab:hover{transform:scale(1.05)}
+.fab svg{width:28px;height:28px}
+.side-acts{position:absolute;left:12px;bottom:82px;display:flex;flex-direction:column;gap:8px;z-index:40}
+.sact{width:42px;height:42px;border-radius:50%;background:#fff;border:1px solid rgba(26,58,143,.15);box-shadow:0 3px 10px rgba(0,0,0,.12);cursor:pointer;display:grid;place-items:center;font-size:17px;color:var(--blue);transition:background .14s}
+.sact:hover{background:#eef1fb}
+
+/* ─── NEWS ─── */
+.news-bar{background:var(--yellow);padding:10px 16px;text-align:center}
+.news-bar h2{color:var(--blue);font-size:18px;font-weight:700}
+.news-item{border-bottom:1px solid #e8eaf0;padding:12px 16px;cursor:pointer}
+.news-item h3{color:var(--text);font-size:14px;font-weight:400;margin-bottom:8px;line-height:1.4}
+.news-img{width:100%;height:140px;border-radius:8px;background:linear-gradient(135deg,#b8cce8,#dce8f4);display:flex;align-items:center;justify-content:center;font-size:13px;color:#888;overflow:hidden}
+.news-date{color:var(--muted);font-size:11px;margin-top:6px}
+.news-acc-banner{margin:12px 16px;background:#e8f0ff;border:1.5px solid rgba(26,58,143,.2);border-radius:14px;padding:13px 14px;display:flex;align-items:center;gap:12px;cursor:pointer;transition:background .14s}
+.news-acc-banner:hover{background:#d4e4ff}
+.nab-icon{width:40px;height:40px;background:var(--blue);border-radius:10px;display:grid;place-items:center;font-size:20px;flex-shrink:0}
+.nab-text .nt-label{font-size:13px;font-weight:700;color:var(--blue)}
+.nab-text .nt-sub{font-size:11px;color:var(--muted);margin-top:2px}
+.nab-arrow{margin-left:auto;color:var(--blue);font-size:20px;font-weight:700}
+
+/* ─── CATALOG ─── */
+.cat-grid{display:grid;grid-template-columns:repeat(4,1fr)}
+.cat-item{display:flex;flex-direction:column;align-items:center;padding:14px 4px 10px;cursor:pointer;border:none;background:#fff;gap:5px;border-bottom:1px solid #f0f2f7;transition:background .12s}
+.cat-item:hover{background:#f4f6fb}
+.cat-icon{width:48px;height:48px;display:grid;place-items:center;font-size:24px}
+.cat-icon.outlined{border:2px solid var(--blue);border-radius:6px;font-size:15px;font-weight:900;color:var(--blue)}
+.cat-label{font-size:10px;font-weight:500;color:var(--blue);text-align:center;line-height:1.3}
+.cat-item.hl{background:#eef1fb}
+.cat-item.hl .cat-icon{background:var(--blue);color:#fff;border-radius:10px}
+.cat-item.hl .cat-label{font-weight:700}
+
+/* ─── CAMPUS MAP ─── */
+.map-wrap{width:100%;height:320px;position:relative;overflow:hidden;background:#c8dca8}
+.map-wrap svg{position:absolute;inset:0;width:100%;height:100%}
+
+/* building labels on map */
+.bld-label{font-size:7px;font-weight:700;fill:#3a5a10;text-anchor:middle}
+.road-path{fill:#9ea5b4}
+.bld-rect{rx:3;ry:3}
+
+.route-svg-overlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.route-svg-overlay path{fill:none;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;transition:opacity .3s}
+.route-svg-overlay path.hidden{opacity:0}
+
+.mpin{position:absolute;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;font-size:9px;font-weight:700;color:#fff;box-shadow:0 3px 8px rgba(0,0,0,.3);transform:translate(-50%,-50%)}
+.mpin.blue-p{background:var(--blue)}
+.mpin.green-p{background:var(--green);transition:opacity .3s}
+.mpin.green-p.hidden{opacity:0}
+.mpin-user{position:absolute;width:20px;height:20px;border-radius:50%;background:var(--blue);border:3px solid #fff;box-shadow:0 3px 10px rgba(26,58,143,.5);transform:translate(-50%,-50%)}
+
+.dpad{position:absolute;right:8px;bottom:12px;display:grid;grid-template-columns:repeat(3,1fr);gap:3px;width:84px}
+.dpad-btn{width:26px;height:26px;border-radius:50%;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:11px;cursor:pointer;border:none;box-shadow:0 3px 8px rgba(26,58,143,.3)}
+.dpad-btn.mid{background:rgba(26,58,143,.4)}
+.dpad-blank{width:26px;height:26px}
+
+.filter-bar{padding:10px 12px 8px;border-bottom:1px solid #eee;background:#fff}
+.filter-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:7px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid rgba(26,58,143,.2);background:#fff;color:var(--blue);padding:6px 12px;border-radius:999px;font-size:12px;font-weight:600;cursor:pointer;transition:all .14s}
+.chip:hover{background:#eef1fb}
+.chip.on{background:var(--blue);color:#fff;border-color:var(--blue)}
+.chip.on.g{background:var(--green);border-color:var(--green)}
+.chip.on.y{background:#d97706;border-color:#d97706}
+
+.acc-panel{background:#f0fdf4;border:1px solid rgba(22,163,74,.2);border-radius:16px;padding:14px;margin:12px;display:none}
+.acc-panel.visible{display:block;animation:fu .2s ease-out}
+.acc-ph{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.acc-ph h3{font-size:15px;font-weight:700;color:#14532d}
+.acc-badge{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:4px 10px;font-size:11px;font-weight:700}
+.acc-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.acc-act{border:1px solid rgba(26,58,143,.12);border-radius:12px;padding:12px 8px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px;font-size:11px;font-weight:700;color:var(--blue);background:#e8f0ff;transition:background .14s}
+.acc-act:hover{background:#d4e4ff}
+.acc-act .aico{font-size:22px}
+.acc-act.g{color:var(--green);background:var(--green-lt);border-color:rgba(22,163,74,.2)}
+.acc-act.g:hover{background:#bbf7d0}
+
+.icard{background:#f4f6fb;border:1px solid var(--border);border-radius:14px;padding:14px;margin:0 12px 12px}
+.icard h3{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:6px}
+.icard p{font-size:12px;color:var(--muted);line-height:1.6}
+
+.bbar{background:#fff;border-top:1px solid #eee;padding:10px 12px 14px;display:flex;gap:8px}
+.bbar-btn{flex:1;padding:12px;border:none;border-radius:12px;font-size:14px;font-weight:700;cursor:pointer;transition:opacity .14s}
+.bbar-btn:hover{opacity:.88}
+.bbar-btn.sec{background:#eef1fb;color:var(--blue)}
+.bbar-btn.pri{background:var(--blue);color:#fff;box-shadow:0 5px 14px rgba(26,58,143,.25)}
+.bbar-btn.grn{background:var(--green);color:#fff;box-shadow:0 5px 14px rgba(22,163,74,.25)}
+
+/* ─── INNER SCREENS ─── */
+.spad{padding:16px 14px 16px}
+.stitle{font-size:19px;font-weight:700;color:var(--blue);margin-bottom:4px}
+.ssub{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:14px}
+.fcard{background:#f4f6fb;border:1px solid var(--border);border-radius:14px;padding:14px;margin-bottom:10px}
+.fcard h3{font-size:13px;color:var(--blue);font-weight:700;margin-bottom:8px}
+.fcard p{font-size:12px;color:var(--muted);line-height:1.6}
+.loc-row{display:flex;align-items:center;gap:10px;background:#e8f0ff;border:1px solid rgba(26,58,143,.15);border-radius:10px;padding:10px 12px;margin-bottom:8px}
+.loc-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.loc-dot.blue{background:var(--blue)}
+.loc-dot.red{background:var(--red)}
+.loc-txt{font-size:13px;color:var(--blue);font-weight:500}
+.tinput{width:100%;border:1.5px solid rgba(26,58,143,.2);border-radius:10px;padding:10px 13px;font-size:13px;color:var(--text);background:#fff;outline:none;font-family:'Roboto',sans-serif;margin-top:8px}
+.tinput:focus{border-color:var(--blue)}
+.sec-label{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 7px}
+
+/* movilidad selector */
+.mov-row{display:flex;gap:8px}
+.mov-btn{flex:1;border:1.5px solid var(--border);border-radius:12px;padding:10px 6px;display:flex;flex-direction:column;align-items:center;gap:5px;cursor:pointer;background:#fff;transition:all .14s}
+.mov-btn .mi{font-size:24px}
+.mov-btn .ml{font-size:10px;font-weight:600;color:var(--muted);text-align:center;line-height:1.3}
+.mov-btn.sel{border-color:var(--blue);background:#e8f0ff}
+.mov-btn.sel .ml{color:var(--blue)}
+
+/* route summary */
+.rsummary{display:flex;gap:8px;background:var(--green-lt);border:1px solid rgba(22,163,74,.2);border-radius:14px;padding:12px 14px;margin-bottom:12px}
+.rstat{flex:1;text-align:center}
+.rstat .val{font-size:20px;font-weight:700;color:var(--green)}
+.rstat .lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.no-stairs{display:inline-flex;align-items:center;gap:5px;background:var(--green-lt);border:1px solid rgba(22,163,74,.3);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:700;color:var(--green);margin-bottom:12px}
+
+/* steps */
+.srow{display:flex;gap:12px;align-items:flex-start;padding:10px 0;border-bottom:1px dashed rgba(22,163,74,.25)}
+.srow:last-child{border-bottom:none}
+.snum{width:30px;height:30px;flex-shrink:0;border-radius:50%;color:#fff;font-size:12px;font-weight:800;display:grid;place-items:center}
+.snum.start{background:var(--blue)}
+.snum.step{background:var(--green)}
+.snum.end{background:var(--red)}
+.sinfo strong{display:block;font-size:13px;color:#14532d;margin-bottom:3px}
+.sinfo span{font-size:11px;color:#45705a;line-height:1.4}
+.stag{display:inline-block;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;margin-top:4px}
+.stag.walk{background:#e8eaf0;color:#4b5563}
+.stag.ramp{background:var(--green-lt);color:var(--green)}
+.stag.lift{background:#dbeafe;color:#1e40af}
+
+/* nav step */
+.navc{background:var(--blue);color:#fff;border-radius:16px;padding:18px 16px;margin-bottom:12px;text-align:center}
+.navc .nd{font-size:36px;margin-bottom:6px}
+.navc .ni{font-size:16px;font-weight:700;margin-bottom:4px}
+.navc .nm{font-size:13px;opacity:.75}
+.pbar-w{background:#e8eaf0;border-radius:999px;height:7px;margin-bottom:12px;overflow:hidden}
+.pbar-f{height:100%;background:linear-gradient(90deg,var(--blue),var(--green));border-radius:999px;transition:width .4s}
+.step-nav-btns{display:flex;gap:8px;margin-bottom:12px}
+.snb{flex:1;border:1.5px solid var(--border);border-radius:10px;padding:10px;font-size:13px;font-weight:700;cursor:pointer;text-align:center;background:#fff;color:var(--blue);transition:background .14s}
+.snb:hover{background:#eef1fb}
+.snb.active-step{background:var(--green);color:#fff;border-color:var(--green)}
+.feat-row{display:flex;align-items:center;gap:10px;padding:9px 12px;background:#f4f6fb;border:1px solid var(--border);border-radius:10px;margin-bottom:6px}
+.feat-row .fi{font-size:20px}
+.feat-row .fn{font-size:12px;font-weight:600;color:var(--text)}
+.feat-row .fd{font-size:10px;color:var(--muted)}
+
+/* QR */
+.qr-box{width:150px;height:150px;margin:0 auto 14px;border:3px solid var(--blue);border-radius:16px;display:grid;place-items:center;background:#fff;position:relative}
+.qr-inner{font-size:72px;filter:grayscale(1) contrast(2)}
+
+@media(max-width:420px){
+  body{padding:0;background:#dde4f0}
+  .phone{border-radius:0;width:100%}
+  .sbody{max-height:none}
+}
+</style>
+</head>
+<body>
+<div class="phone">
+  <div class="sbar">
+    <span>21:22</span>
+    <div style="display:flex;align-items:center;gap:6px"><span>📶</span><span>74%</span></div>
+  </div>
+  <div class="abar">
+    <button class="abar-btn" id="backBtn">←</button>
+    <span class="abar-title" id="appTitle">Noticias y Eventos</span>
+    <button class="abar-btn" id="searchBtn">⌕</button>
+  </div>
+  <div class="sbody" id="sbody">
+
+  <!-- ══ FEED ══ -->
+  <section class="screen active" id="feedScreen">
+    <div class="news-bar"><h2>Noticias</h2></div>
+    <div class="news-acc-banner" data-screen="campusScreen">
+      <div class="nab-icon">♿</div>
+      <div class="nab-text">
+        <div class="nt-label">Módulo de rutas accesibles</div>
+        <div class="nt-sub">Nuevo en Campus · Navega sin escaleras</div>
+      </div>
+      <div class="nab-arrow">›</div>
+    </div>
+    <div class="news-item">
+      <h3>Carta a las y los estudiantes</h3>
+      <div class="news-img"><span style="color:#aaa">[ imagen del rector ]</span></div>
+      <p class="news-date">Edición: 2026-05-12 14:49:00</p>
+    </div>
+    <div class="news-item">
+      <h3 style="font-weight:700">Cinco estudiantes de Derecho de la Javeriana cursarán doble titulación con Boston College</h3>
+      <div class="news-img" style="background:linear-gradient(145deg,#2d6a4f,#74c69d)"><span style="color:rgba(255,255,255,.6)">[ imagen campus ]</span></div>
+      <p class="news-date">Edición: 2026-05-08 15:27:00</p>
+    </div>
+    <div class="side-acts">
+      <button class="sact">📚</button>
+      <button class="sact">🪪</button>
+      <button class="sact">📅</button>
+      <button class="sact" data-screen="catalogScreen">⊞</button>
+    </div>
+    <div class="fab" data-screen="catalogScreen"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="white" stroke-width="2"/><path d="M20 8C26 8 31 13 31 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M31 20C31 27 26 32 20 32" stroke="#f5c400" stroke-width="2.5" stroke-linecap="round"/><path d="M20 32C14 32 9 27 9 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M9 20C9 13 14 8 20 8" stroke="#f5c400" stroke-width="2.5" stroke-linecap="round"/><polygon points="20,4 17,10 23,10" fill="white"/><polygon points="20,36 23,30 17,30" fill="#f5c400"/></svg></div>
+    <div style="height:90px"></div>
+  </section>
+
+  <!-- ══ CATALOG ══ -->
+  <section class="screen" id="catalogScreen">
+    <div class="cat-grid">
+      <button class="cat-item"><div class="cat-icon outlined">5.0</div><span class="cat-label">Mis Notas</span></button>
+      <button class="cat-item"><div class="cat-icon">📻</div><span class="cat-label">Javeriana Estéreo</span></button>
+      <button class="cat-item" data-screen="feedScreen"><div class="cat-icon">📰</div><span class="cat-label">Noticias y Eventos</span></button>
+      <button class="cat-item"><div class="cat-icon">🚗</div><span class="cat-label">Parqueadero</span></button>
+      <button class="cat-item"><div class="cat-icon">🏛️</div><span class="cat-label">Portal Institucional</span></button>
+      <button class="cat-item"><div class="cat-icon">🕸️</div><span class="cat-label">Intranet</span></button>
+      <button class="cat-item"><div class="cat-icon">🎭</div><span class="cat-label">Agenda Cultural</span></button>
+      <button class="cat-item"><div class="cat-icon">📇</div><span class="cat-label">Directorio</span></button>
+      <button class="cat-item"><div class="cat-icon">🏥</div><span class="cat-label">Eventos y Servicios</span></button>
+      <button class="cat-item"><div class="cat-icon">🍽️</div><span class="cat-label">Servicios Alimentación</span></button>
+      <button class="cat-item"><div class="cat-icon">⚕️</div><span class="cat-label">CAPS</span></button>
+      <button class="cat-item"><div class="cat-icon">🖨️</div><span class="cat-label">Impresión Int.</span></button>
+      <button class="cat-item"><div class="cat-icon">✝️</div><span class="cat-label">Propósito Superior</span></button>
+      <button class="cat-item"><div class="cat-icon">🔔</div><span class="cat-label">Notificaciones</span></button>
+      <button class="cat-item hl" data-screen="campusScreen"><div class="cat-icon">🗺️</div><span class="cat-label">Campus</span></button>
+      <button class="cat-item"><div class="cat-icon">☎️</div><span class="cat-label">Emergencia</span></button>
+      <button class="cat-item"><div class="cat-icon">⚙️</div><span class="cat-label">Configuración</span></button>
+      <button class="cat-item"><div class="cat-icon">💳</div><span class="cat-label">Pago Facturas</span></button>
+    </div>
+    <div class="fab" data-screen="feedScreen"><svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="white" stroke-width="2"/><path d="M20 8C26 8 31 13 31 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M31 20C31 27 26 32 20 32" stroke="#f5c400" stroke-width="2.5" stroke-linecap="round"/><path d="M20 32C14 32 9 27 9 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M9 20C9 13 14 8 20 8" stroke="#f5c400" stroke-width="2.5" stroke-linecap="round"/><polygon points="20,4 17,10 23,10" fill="white"/><polygon points="20,36 23,30 17,30" fill="#f5c400"/></svg></div>
+    <div style="height:90px"></div>
+  </section>
+
+  <!-- ══ CAMPUS ══ -->
+  <section class="screen" id="campusScreen">
+    <div class="map-wrap" id="mapWrap">
+      <!-- BASE MAP SVG with labeled buildings -->
+      <svg viewBox="0 0 390 320" xmlns="http://www.w3.org/2000/svg">
+        <!-- ground -->
+        <rect width="390" height="320" fill="#c8dca8"/>
+        <!-- roads -->
+        <rect x="0" y="218" width="390" height="14" fill="#9ea5b4" opacity=".7"/>
+        <rect x="0" y="148" width="390" height="8" fill="#9ea5b4" opacity=".35"/>
+        <rect x="122" y="0" width="9" height="320" fill="#9ea5b4" opacity=".35"/>
+        <rect x="245" y="0" width="9" height="320" fill="#9ea5b4" opacity=".35"/>
+        <!-- trees -->
+        <circle cx="14" cy="40" r="9" fill="#7ab84a" opacity=".7"/>
+        <circle cx="35" cy="60" r="7" fill="#7ab84a" opacity=".6"/>
+        <circle cx="370" cy="50" r="10" fill="#7ab84a" opacity=".7"/>
+        <circle cx="350" cy="280" r="8" fill="#7ab84a" opacity=".6"/>
+        <circle cx="20" cy="270" r="9" fill="#7ab84a" opacity=".65"/>
+
+        <!-- Ed. GAIA / Ingeniería (orange, big) -->
+        <rect class="bld-rect" x="30" y="240" width="90" height="60" fill="#e8a060" stroke="#b07040" stroke-width="1"/>
+        <text class="bld-label" x="75" y="264">Ed. GAIA</text>
+        <text class="bld-label" x="75" y="274" font-size="6">(Ingeniería)</text>
+
+        <!-- Ed. Pablo VI (gray) -->
+        <rect class="bld-rect" x="140" y="245" width="75" height="55" fill="#c8ccda" stroke="#9098b0" stroke-width="1"/>
+        <text class="bld-label" x="177" y="266">Ed. Pablo VI</text>
+
+        <!-- Ed. Pedro Arrupe (cream) -->
+        <rect class="bld-rect" x="235" y="240" width="80" height="58" fill="#ede8c4" stroke="#b0a870" stroke-width="1"/>
+        <text class="bld-label" x="275" y="262">Ed. Pedro</text>
+        <text class="bld-label" x="275" y="271">Arrupe</text>
+
+        <!-- Ed. José Gabriel (orange, tall) -->
+        <rect class="bld-rect" x="30" y="100" width="80" height="100" fill="#e8a060" stroke="#b07040" stroke-width="1"/>
+        <text class="bld-label" x="70" y="143">Ed. José</text>
+        <text class="bld-label" x="70" y="152">Gabriel</text>
+
+        <!-- Biblioteca Alfonso Borrero (gray) -->
+        <rect class="bld-rect" x="135" y="80" width="95" height="90" fill="#c8ccda" stroke="#9098b0" stroke-width="1"/>
+        <text class="bld-label" x="182" y="117">Biblioteca</text>
+        <text class="bld-label" x="182" y="126">Alfonso B.</text>
+
+        <!-- Ed. Jesús Mª Yepes (blue) -->
+        <rect class="bld-rect" x="255" y="70" width="105" height="105" fill="#90c0d8" stroke="#5088b0" stroke-width="1"/>
+        <text class="bld-label" x="307" y="113">Ed. Jesús</text>
+        <text class="bld-label" x="307" y="122">Mª Yepes</text>
+
+        <!-- Ed. Óscar Calvo (orange, top) -->
+        <rect class="bld-rect" x="30" y="20" width="80" height="60" fill="#e8a060" stroke="#b07040" stroke-width="1"/>
+        <text class="bld-label" x="70" y="46">Ed. Óscar</text>
+        <text class="bld-label" x="70" y="55">Calvo</text>
+
+        <!-- Ed. Emilio Arango (cream, top) -->
+        <rect class="bld-rect" x="135" y="10" width="95" height="55" fill="#ede8c4" stroke="#b0a870" stroke-width="1"/>
+        <text class="bld-label" x="182" y="33">Ed. Emilio</text>
+        <text class="bld-label" x="182" y="42">Arango</text>
+
+        <!-- Plaza central -->
+        <ellipse cx="307" cy="30" rx="40" ry="20" fill="#a8c880" opacity=".7"/>
+        <text class="bld-label" x="307" y="33" fill="#2a4a10">Plaza</text>
+      </svg>
+
+      <!-- ROUTE OVERLAYS -->
+      <svg class="route-svg-overlay" viewBox="0 0 390 320" preserveAspectRatio="none">
+        <path id="pathNoStairs" class="hidden" d="M75 270 L75 232 Q75 220 90 220 L132 220 Q140 220 140 212 L140 160 Q140 148 152 145 L182 130 Q195 122 220 118 L255 112 Q262 112 262 104 L262 88" stroke="#16a34a" stroke-dasharray="9 5"/>
+        <path id="pathFast" class="hidden" d="M75 270 L130 210 L182 155 L262 100" stroke="#1a3a8f"/>
+        <path id="pathLift" class="hidden" d="M75 270 L75 240 Q75 228 88 225 L182 218 Q195 218 195 205 L195 148 Q195 135 210 132 L262 122 Q270 120 270 110 L270 90" stroke="#d97706" stroke-dasharray="7 4"/>
+      </svg>
+
+      <!-- Standard pins -->
+      <div class="mpin blue-p" style="left:70px;top:150px">JG</div>
+      <div class="mpin blue-p" style="left:182px;top:125px">BA</div>
+      <div class="mpin blue-p" style="left:307px;top:122px">JY</div>
+      <div class="mpin blue-p" style="left:75px;top:270px">GA</div>
+      <div class="mpin blue-p" style="left:177px;top:272px">P6</div>
+      <div class="mpin blue-p" style="left:275px;top:268px">PA</div>
+
+      <!-- Accessible pins (hidden by default) -->
+      <div class="mpin green-p hidden" style="left:140px;top:155px">♿</div>
+      <div class="mpin green-p hidden" style="left:195px;top:200px">🛗</div>
+      <div class="mpin green-p hidden" style="left:262px;top:115px">🛗</div>
+
+      <!-- User position -->
+      <div class="mpin-user" style="left:75px;top:270px"></div>
+
+      <div class="dpad">
+        <div class="dpad-blank"></div><button class="dpad-btn">▲</button><div class="dpad-blank"></div>
+        <button class="dpad-btn">◀</button><button class="dpad-btn mid">●</button><button class="dpad-btn">▶</button>
+        <div class="dpad-blank"></div><button class="dpad-btn">▼</button><div class="dpad-blank"></div>
+      </div>
+
+      <div class="fab" style="width:44px;height:44px;bottom:10px;left:10px" data-screen="catalogScreen">
+        <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="18" stroke="white" stroke-width="2"/><path d="M20 8C26 8 31 13 31 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M31 20C31 27 26 32 20 32" stroke="#f5c400" stroke-width="2.5" stroke-linecap="round"/><path d="M20 32C14 32 9 27 9 20" stroke="white" stroke-width="2.5" stroke-linecap="round"/><path d="M9 20C9 13 14 8 20 8" stroke="#f5c400" stroke-width="2.5" stroke-linecap="round"/><polygon points="20,4 17,10 23,10" fill="white"/><polygon points="20,36 23,30 17,30" fill="#f5c400"/></svg>
+      </div>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-label">Filtrar rutas accesibles</div>
+      <div class="chips">
+        <button class="chip" id="chipNoStairs" data-route="noStairs">🦽 Sin escaleras</button>
+        <button class="chip" id="chipFast" data-route="fast">♿ Rampas</button>
+        <button class="chip" id="chipLift" data-route="lift">🛗 Ascensor</button>
+      </div>
+    </div>
+
+    <div class="acc-panel" id="accPanel">
+      <div class="acc-ph">
+        <h3>Rutas accesibles</h3>
+        <span class="acc-badge" id="accBadge">Sin escaleras</span>
+      </div>
+      <div class="acc-actions">
+        <button class="acc-act g" data-screen="destScreen"><span class="aico">📍</span><span>Planear mi ruta</span></button>
+        <button class="acc-act" data-screen="qrScreen"><span class="aico">▣</span><span>Escanear QR</span></button>
+        <button class="acc-act" data-screen="prefScreen"><span class="aico">⚙️</span><span>Mis preferencias</span></button>
+        <button class="acc-act" data-screen="stepScreen"><span class="aico">🧭</span><span>Paso a paso</span></button>
+      </div>
+    </div>
+
+    <div class="icard">
+      <h3>¿Cómo usar el módulo de accesibilidad?</h3>
+      <p>Selecciona un filtro de ruta para ver la capa accesible sobre el mapa. Luego usa <strong>Planear mi ruta</strong> para ingresar tu destino, o <strong>Escanear QR</strong> si eres visitante.</p>
+    </div>
+
+    <div class="bbar">
+      <button class="bbar-btn sec" data-screen="catalogScreen">Catálogo</button>
+      <button class="bbar-btn pri" data-screen="destScreen">Planear ruta</button>
+    </div>
+  </section>
+
+  <!-- ══ DESTINO ══ -->
+  <section class="screen" id="destScreen">
+    <div class="spad">
+      <h2 class="stitle">Planear ruta accesible</h2>
+      <p class="ssub">Ingresa tu destino y ajusta tus preferencias para generar una ruta sin escaleras.</p>
+
+      <div class="sec-label">Tipo de movilidad</div>
+      <div class="mov-row">
+        <button class="mov-btn sel" onclick="selMov(this)"><div class="mi">🦯</div><div class="ml">Muletas</div></button>
+        <button class="mov-btn" onclick="selMov(this)"><div class="mi">🦾</div><div class="ml">Bota ortopédica</div></button>
+        <button class="mov-btn" onclick="selMov(this)"><div class="mi">♿</div><div class="ml">Silla de ruedas</div></button>
+      </div>
+
+      <div class="fcard" style="margin-top:12px">
+        <h3>Tu ubicación actual</h3>
+        <div class="loc-row">
+          <div class="loc-dot blue"></div>
+          <span class="loc-txt">Ed. GAIA — Entrada principal</span>
+        </div>
+        <p>Detectado por QR del edificio o GPS.</p>
+      </div>
+
+      <div class="fcard">
+        <h3>¿Adónde vas?</h3>
+        <div class="loc-row" style="background:#fff3f3;border-color:rgba(220,38,38,.2)">
+          <div class="loc-dot red"></div>
+          <span class="loc-txt" style="color:#9b1c1c">Ed. Jesús Mª Yepes — Piso 3</span>
+        </div>
+        <div class="chips" style="margin-top:8px">
+          <button class="chip on">Ed. Jesús Mª Yepes</button>
+          <button class="chip">Biblioteca</button>
+          <button class="chip">Cafetería</button>
+          <button class="chip">Capilla</button>
+        </div>
+        <input class="tinput" placeholder="O escribe otro edificio..."/>
+      </div>
+
+      <div class="fcard">
+        <h3>Preferencias de ruta</h3>
+        <div class="chips">
+          <button class="chip on">Evitar escaleras</button>
+          <button class="chip on">Minimizar pendientes</button>
+          <button class="chip">Menor distancia</button>
+          <button class="chip">Ascensor prioritario</button>
+        </div>
+      </div>
+    </div>
+    <div class="bbar">
+      <button class="bbar-btn sec" data-screen="campusScreen">Mapa</button>
+      <button class="bbar-btn pri" data-screen="routeScreen">Calcular ruta →</button>
+    </div>
+  </section>
+
+  <!-- ══ RUTA ══ -->
+  <section class="screen" id="routeScreen">
+    <div class="spad">
+      <h2 class="stitle">Ruta accesible</h2>
+      <p class="ssub">Ed. GAIA → Ed. Jesús Mª Yepes · Piso 3</p>
+      <div class="rsummary">
+        <div class="rstat"><div class="val">8 min</div><div class="lbl">Tiempo est.</div></div>
+        <div class="rstat"><div class="val">380 m</div><div class="lbl">Distancia</div></div>
+        <div class="rstat"><div class="val">0</div><div class="lbl">Escaleras</div></div>
+      </div>
+      <div class="no-stairs">✅ Ruta completamente sin escaleras</div>
+
+      <div class="srow">
+        <div class="snum start">🚩</div>
+        <div class="sinfo"><strong>Inicio: Ed. GAIA — Entrada principal</strong><span>Sal por la puerta principal y gira a la izquierda.</span><br><span class="stag walk">Caminar</span></div>
+      </div>
+      <div class="srow">
+        <div class="snum step">1</div>
+        <div class="sinfo"><strong>Avanza 40 m por el corredor cubierto</strong><span>Superficie plana. Sigue señalización verde en el piso.</span><br><span class="stag walk">Caminar · 40 m</span></div>
+      </div>
+      <div class="srow">
+        <div class="snum step">2</div>
+        <div class="sinfo"><strong>Usa la rampa R-07 (señalizada en verde)</strong><span>Pendiente 6%. Ancho 1.8 m. Evita la escalera del bloque central.</span><br><span class="stag ramp">Rampa</span></div>
+      </div>
+      <div class="srow">
+        <div class="snum step">3</div>
+        <div class="sinfo"><strong>Toma el ascensor A2 hasta el nivel 3</strong><span>Botones en braille. Espera estimada: 1 min.</span><br><span class="stag lift">Ascensor</span></div>
+      </div>
+      <div class="srow">
+        <div class="snum step">4</div>
+        <div class="sinfo"><strong>Gira a la derecha y avanza 60 m</strong><span>Corredor con piso antideslizante.</span><br><span class="stag walk">Caminar · 60 m</span></div>
+      </div>
+      <div class="srow">
+        <div class="snum end">🏁</div>
+        <div class="sinfo"><strong>Llegada: Ed. Jesús Mª Yepes, Piso 3</strong><span>Entrada accesible por el costado norte.</span></div>
+      </div>
+    </div>
+    <div class="bbar">
+      <button class="bbar-btn sec" data-screen="destScreen">Cambiar destino</button>
+      <button class="bbar-btn grn" data-screen="stepScreen">Iniciar navegación →</button>
+    </div>
+  </section>
+
+  <!-- ══ PASO A PASO ══ -->
+  <section class="screen" id="stepScreen">
+    <div class="spad">
+      <h2 class="stitle">Navegación activa</h2>
+      <p class="ssub">Ed. GAIA → Ed. Jesús Mª Yepes</p>
+
+      <div class="navc">
+        <div class="nd" id="stepIcon">↗️</div>
+        <div class="ni" id="stepTitle">Avanza 40 m por el corredor cubierto</div>
+        <div class="nm" id="stepSub">Sigue la señalización verde en el piso</div>
+      </div>
+
+      <div class="pbar-w"><div class="pbar-f" id="progressBar" style="width:25%"></div></div>
+
+      <div class="step-nav-btns">
+        <button class="snb" id="prevBtn" onclick="changeStep(-1)">← Anterior</button>
+        <button class="snb active-step" id="nextBtn" onclick="changeStep(1)">Siguiente →</button>
+      </div>
+
+      <div style="font-size:12px;font-weight:700;color:var(--blue);margin-bottom:8px">Infraestructura accesible cercana</div>
+      <div class="feat-row"><span class="fi">🛗</span><div><div class="fn">Ascensor A2</div><div class="fd">A 25 m · Disponible · Niveles 1–4</div></div></div>
+      <div class="feat-row"><span class="fi">♿</span><div><div class="fn">Rampa R-07</div><div class="fd">A 15 m · Pendiente 6% · Ancho 1.8 m</div></div></div>
+      <div class="feat-row"><span class="fi">🚻</span><div><div class="fn">Baño adaptado Bloque C</div><div class="fd">A 30 m · Planta baja</div></div></div>
+
+      <div class="fcard" style="margin-top:8px">
+        <h3>¿Necesitas ayuda?</h3>
+        <p>Llama a la extensión <strong>2200</strong> · Seguridad del campus disponible 24/7.</p>
+      </div>
+    </div>
+    <div class="bbar">
+      <button class="bbar-btn sec" data-screen="routeScreen">Ver ruta</button>
+      <button class="bbar-btn pri" data-screen="campusScreen">Volver al mapa</button>
+    </div>
+  </section>
+
+  <!-- ══ QR ══ -->
+  <section class="screen" id="qrScreen">
+    <div class="spad">
+      <h2 class="stitle">Acceso por código QR</h2>
+      <p class="ssub">No requiere inicio de sesión. Escanea el QR del edificio donde estás para obtener tu ruta accesible.</p>
+      <div class="qr-box"><div class="qr-inner">▦</div></div>
+      <div class="fcard">
+        <h3>Ubicación detectada</h3>
+        <div class="loc-row"><div class="loc-dot blue"></div><span class="loc-txt">Ed. GAIA — Entrada principal</span></div>
+        <p>El QR físico del edificio identifica tu punto de inicio automáticamente.</p>
+      </div>
+      <div class="fcard">
+        <h3>Selecciona tu destino</h3>
+        <div class="chips" style="margin-bottom:8px">
+          <button class="chip on">Sin escaleras</button>
+          <button class="chip">Ruta más corta</button>
+          <button class="chip">Con ascensor</button>
+        </div>
+        <select class="tinput" style="appearance:none;background:#fff;margin-top:0">
+          <option>Selecciona un destino</option>
+          <option>Ed. Jesús Mª Yepes</option>
+          <option>Biblioteca Alfonso Borrero</option>
+          <option>Cafetería</option>
+          <option>Capilla</option>
+        </select>
+      </div>
+    </div>
+    <div class="bbar">
+      <button class="bbar-btn sec" data-screen="campusScreen">Mapa</button>
+      <button class="bbar-btn pri" data-screen="routeScreen">Ver ruta →</button>
+    </div>
+  </section>
+
+  <!-- ══ PREFERENCIAS ══ -->
+  <section class="screen" id="prefScreen">
+    <div class="spad">
+      <h2 class="stitle">Mis preferencias</h2>
+      <p class="ssub">Configura tu perfil de movilidad para que el sistema genere rutas adaptadas a tu condición.</p>
+      <div class="sec-label">Tipo de movilidad</div>
+      <div class="mov-row" style="margin-bottom:14px">
+        <button class="mov-btn sel" onclick="selMov(this)"><div class="mi">🦯</div><div class="ml">Muletas</div></button>
+        <button class="mov-btn" onclick="selMov(this)"><div class="mi">🦾</div><div class="ml">Bota ortopédica</div></button>
+        <button class="mov-btn" onclick="selMov(this)"><div class="mi">♿</div><div class="ml">Silla de ruedas</div></button>
+      </div>
+      <div class="fcard">
+        <h3>Preferencias activas</h3>
+        <div class="chips">
+          <button class="chip on">Evitar escaleras</button>
+          <button class="chip on">Minimizar pendientes</button>
+          <button class="chip">Menor distancia</button>
+          <button class="chip">Ascensor prioritario</button>
+          <button class="chip">Evitar pasillos estrechos</button>
+        </div>
+      </div>
+      <div class="fcard">
+        <h3>Condición actual</h3>
+        <div class="chips">
+          <button class="chip on">Lesión temporal</button>
+          <button class="chip">Movilidad reducida permanente</button>
+          <button class="chip">Carga pesada</button>
+        </div>
+      </div>
+    </div>
+    <div class="bbar">
+      <button class="bbar-btn sec" data-screen="campusScreen">Volver</button>
+      <button class="bbar-btn pri" data-screen="destScreen">Guardar y planear →</button>
+    </div>
+  </section>
+
+  </div><!-- /sbody -->
+</div><!-- /phone -->
+
+<script>
+/* ── Navigation ── */
+const titleMap = {
+  feedScreen:'Noticias y Eventos', catalogScreen:'JaveMóvil',
+  campusScreen:'Campus', destScreen:'Planear ruta',
+  routeScreen:'Ruta accesible', stepScreen:'Navegación activa',
+  qrScreen:'Código QR', prefScreen:'Preferencias'
+};
+const hist = ['feedScreen'];
+
+function showScreen(id){
+  const el = document.getElementById(id);
+  if(!id||!el) return;
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('appTitle').textContent = titleMap[id]||'JaveMóvil';
+  document.getElementById('sbody').scrollTo({top:0,behavior:'smooth'});
+  if(hist[hist.length-1]!==id) hist.push(id);
+}
+
+document.querySelectorAll('[data-screen]').forEach(el=>{
+  el.addEventListener('click', e=>{e.stopPropagation(); showScreen(el.dataset.screen);});
+});
+document.getElementById('backBtn').addEventListener('click',()=>{
+  if(hist.length>1){hist.pop(); showScreen(hist[hist.length-1]);}
+});
+document.getElementById('searchBtn').addEventListener('click',()=>showScreen('destScreen'));
+
+/* ── Route chips ── */
+const routeCfg = {
+  noStairs:{pathId:'pathNoStairs', color:'#16a34a', cls:'g', label:'Sin escaleras', infra:true},
+  fast:    {pathId:'pathFast',     color:'#1a3a8f', cls:'',  label:'Rampas',        infra:false},
+  lift:    {pathId:'pathLift',     color:'#d97706', cls:'y', label:'Con ascensor',   infra:true}
+};
+let activeRoute=null;
+
+document.querySelectorAll('[data-route]').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const key=btn.dataset.route;
+    if(activeRoute===key){
+      activeRoute=null;
+      btn.classList.remove('on','g','y');
+      clearRoutes(); hidePanel(); return;
+    }
+    activeRoute=key;
+    document.querySelectorAll('[data-route]').forEach(b=>b.classList.remove('on','g','y'));
+    const cfg=routeCfg[key];
+    btn.classList.add('on'); if(cfg.cls) btn.classList.add(cfg.cls);
+    applyRoute(cfg);
+  });
+});
+
+function clearRoutes(){
+  document.querySelectorAll('.route-svg-overlay path').forEach(p=>p.classList.add('hidden'));
+  document.querySelectorAll('.green-p').forEach(p=>p.classList.add('hidden'));
+}
+function applyRoute(cfg){
+  clearRoutes();
+  const p=document.getElementById(cfg.pathId); if(p) p.classList.remove('hidden');
+  if(cfg.infra) document.querySelectorAll('.green-p').forEach(p=>p.classList.remove('hidden'));
+  showPanel(cfg.label, cfg.color);
+}
+function showPanel(label, color){
+  const panel=document.getElementById('accPanel');
+  const badge=document.getElementById('accBadge');
+  badge.textContent=label;
+  badge.style.cssText=`background:${color}22;border:1px solid ${color}55;color:${color}`;
+  panel.classList.add('visible');
+  setTimeout(()=>panel.scrollIntoView({behavior:'smooth',block:'nearest'}),200);
+}
+function hidePanel(){document.getElementById('accPanel').classList.remove('visible');}
+
+/* ── Movilidad selector ── */
+function selMov(el){
+  el.closest('.mov-row').querySelectorAll('.mov-btn').forEach(b=>b.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+/* ── Chips toggle ── */
+document.querySelectorAll('.chip:not([data-route])').forEach(c=>{
+  c.addEventListener('click',()=>c.classList.toggle('on'));
+});
+
+/* ── Step navigation ── */
+const steps=[
+  {icon:'↗️', title:'Sal por la puerta principal del Ed. GAIA', sub:'Gira a la izquierda · Corredor cubierto'},
+  {icon:'🚶', title:'Avanza 40 m por el corredor cubierto',     sub:'Sigue la señalización verde en el piso'},
+  {icon:'♿', title:'Usa la rampa R-07 (señalizada en verde)',   sub:'Pendiente 6% · Ancho 1.8 m'},
+  {icon:'🛗', title:'Toma el ascensor A2 hasta el nivel 3',     sub:'Botones en braille · Espera ~1 min'},
+  {icon:'🏁', title:'Llegada: Ed. Jesús Mª Yepes, Piso 3',      sub:'Entrada accesible por el costado norte'}
+];
+let currentStep=1;
+
+function changeStep(dir){
+  currentStep=Math.max(0,Math.min(steps.length-1,currentStep+dir));
+  const s=steps[currentStep];
+  document.getElementById('stepIcon').textContent=s.icon;
+  document.getElementById('stepTitle').textContent=s.title;
+  document.getElementById('stepSub').textContent=s.sub;
+  document.getElementById('progressBar').style.width=((currentStep+1)/steps.length*100)+'%';
+  document.getElementById('prevBtn').disabled=currentStep===0;
+  document.getElementById('nextBtn').textContent=currentStep===steps.length-1?'✅ Llegué':'Siguiente →';
+}
+</script>
+</body>
+</html>
